@@ -1,0 +1,6 @@
+wallpapers-live/videos/*
+!wallpapers-live/videos/.gitkeep
+*.part
+.DS_Store
+outputs/
+work/
