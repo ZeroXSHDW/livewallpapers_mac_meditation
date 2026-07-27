@@ -55,7 +55,7 @@ fi
 mkdir -p "$output_dir"
 
 tail -n +2 "$manifest" |
-  while IFS=$'\t' read -r filename page_url asset_url; do
+  while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
     target="$output_dir/$filename"
     partial="$target.part"
 
