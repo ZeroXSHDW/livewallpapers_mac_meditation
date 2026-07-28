@@ -55,93 +55,100 @@ for command_name in ffmpeg ffprobe; do
   fi
 done
 
-tail -n +2 "$manifest" |
-  while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
-    video="$video_dir/$filename"
+if [[ ! -d "$video_dir" ]]; then
+  echo "error: video directory not found: $video_dir" >&2
+  echo "hint: run ./scripts/download_wallpapers.sh first" >&2
+  exit 1
+fi
 
-    if [[ ! -f "$video" ]]; then
-      echo "missing: $filename"
-      continue
-    fi
+while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
+  [[ -n "${filename:-}" ]] || continue
 
-    existing_audio="$(
-      ffprobe -v error -select_streams a -show_entries stream=codec_name \
-        -of default=nw=1:nk=1 "$video"
-    )"
+  video="$video_dir/$filename"
 
-    if [[ "$audio_profile" == "preserve" && -n "$existing_audio" ]]; then
-      echo "preserve: $filename"
-      continue
-    fi
+  if [[ ! -f "$video" ]]; then
+    echo "missing: $filename"
+    continue
+  fi
 
-    if [[ -n "$existing_audio" && "$force" -eq 0 ]]; then
-      echo "skip audio: $filename"
-      continue
-    fi
+  existing_audio="$(
+    ffprobe -v error -select_streams a -show_entries stream=codec_name \
+      -of default=nw=1:nk=1 "$video"
+  )"
 
-    duration="$(
-      ffprobe -v error -show_entries format=duration \
-        -of default=nw=1:nk=1 "$video"
-    )"
-    fade_start="$(awk -v duration="$duration" \
-      'BEGIN { start = duration - 0.75; if (start < 0) start = 0; printf "%.3f", start }')"
+  if [[ "$audio_profile" == "preserve" && -n "$existing_audio" ]]; then
+    echo "preserve: $filename"
+    continue
+  fi
 
-    case "$audio_profile" in
-      ocean)
-        source_filter="anoisesrc=color=brown:amplitude=0.22:sample_rate=48000"
-        sound_filter="highpass=f=35,lowpass=f=1100,tremolo=f=0.10:d=0.25,volume=0.18"
-        ;;
-      water)
-        source_filter="anoisesrc=color=pink:amplitude=0.16:sample_rate=48000"
-        sound_filter="highpass=f=90,lowpass=f=2600,tremolo=f=0.12:d=0.15,volume=0.13"
-        ;;
-      rain)
-        source_filter="anoisesrc=color=white:amplitude=0.10:sample_rate=48000"
-        sound_filter="highpass=f=900,lowpass=f=7000,volume=0.10"
-        ;;
-      wind)
-        source_filter="anoisesrc=color=brown:amplitude=0.14:sample_rate=48000"
-        sound_filter="highpass=f=45,lowpass=f=850,tremolo=f=0.10:d=0.30,volume=0.12"
-        ;;
-      underwater)
-        source_filter="anoisesrc=color=brown:amplitude=0.20:sample_rate=48000"
-        sound_filter="highpass=f=25,lowpass=f=420,tremolo=f=0.10:d=0.20,volume=0.16"
-        ;;
-      celestial)
-        source_filter="sine=frequency=110:sample_rate=48000"
-        sound_filter="lowpass=f=500,tremolo=f=0.10:d=0.35,volume=0.035"
-        ;;
-      preserve)
-        source_filter="anoisesrc=color=pink:amplitude=0.12:sample_rate=48000"
-        sound_filter="highpass=f=80,lowpass=f=1800,volume=0.10"
-        ;;
-      *)
-        echo "error: unknown audio profile '$audio_profile' for $filename" >&2
-        exit 1
-        ;;
-    esac
+  if [[ -n "$existing_audio" && "$force" -eq 0 ]]; then
+    echo "skip audio: $filename"
+    continue
+  fi
 
-    temporary="$video.audio.mp4"
-    echo "add $audio_profile audio: $filename"
-    ffmpeg \
-      -hide_banner \
-      -loglevel error \
-      -nostdin \
-      -y \
-      -i "$video" \
-      -f lavfi \
-      -i "$source_filter" \
-      -filter_complex \
-        "[1:a]$sound_filter,pan=stereo|c0=c0|c1=c0,afade=t=in:st=0:d=0.75,afade=t=out:st=$fade_start:d=0.75[ambient]" \
-      -map 0:v:0 \
-      -map "[ambient]" \
-      -c:v copy \
-      -c:a aac \
-      -b:a 160k \
-      -t "$duration" \
-      -movflags +faststart \
-      "$temporary"
-    mv "$temporary" "$video"
-  done
+  duration="$(
+    ffprobe -v error -show_entries format=duration \
+      -of default=nw=1:nk=1 "$video"
+  )"
+  fade_start="$(awk -v duration="$duration" \
+    'BEGIN { start = duration - 0.75; if (start < 0) start = 0; printf "%.3f", start }')"
+
+  case "$audio_profile" in
+    ocean)
+      source_filter="anoisesrc=color=brown:amplitude=0.22:sample_rate=48000"
+      sound_filter="highpass=f=35,lowpass=f=1100,tremolo=f=0.10:d=0.25,volume=0.18"
+      ;;
+    water)
+      source_filter="anoisesrc=color=pink:amplitude=0.16:sample_rate=48000"
+      sound_filter="highpass=f=90,lowpass=f=2600,tremolo=f=0.12:d=0.15,volume=0.13"
+      ;;
+    rain)
+      source_filter="anoisesrc=color=white:amplitude=0.10:sample_rate=48000"
+      sound_filter="highpass=f=900,lowpass=f=7000,volume=0.10"
+      ;;
+    wind)
+      source_filter="anoisesrc=color=brown:amplitude=0.14:sample_rate=48000"
+      sound_filter="highpass=f=45,lowpass=f=850,tremolo=f=0.10:d=0.30,volume=0.12"
+      ;;
+    underwater)
+      source_filter="anoisesrc=color=brown:amplitude=0.20:sample_rate=48000"
+      sound_filter="highpass=f=25,lowpass=f=420,tremolo=f=0.10:d=0.20,volume=0.16"
+      ;;
+    celestial)
+      source_filter="sine=frequency=110:sample_rate=48000"
+      sound_filter="lowpass=f=500,tremolo=f=0.10:d=0.35,volume=0.035"
+      ;;
+    preserve)
+      source_filter="anoisesrc=color=pink:amplitude=0.12:sample_rate=48000"
+      sound_filter="highpass=f=80,lowpass=f=1800,volume=0.10"
+      ;;
+    *)
+      echo "error: unknown audio profile '$audio_profile' for $filename" >&2
+      exit 1
+      ;;
+  esac
+
+  temporary="$video.audio.mp4"
+  echo "add $audio_profile audio: $filename"
+  ffmpeg \
+    -hide_banner \
+    -loglevel error \
+    -nostdin \
+    -y \
+    -i "$video" \
+    -f lavfi \
+    -i "$source_filter" \
+    -filter_complex \
+      "[1:a]$sound_filter,pan=stereo|c0=c0|c1=c0,afade=t=in:st=0:d=0.75,afade=t=out:st=$fade_start:d=0.75[ambient]" \
+    -map 0:v:0 \
+    -map "[ambient]" \
+    -c:v copy \
+    -c:a aac \
+    -b:a 160k \
+    -t "$duration" \
+    -movflags +faststart \
+    "$temporary"
+  mv "$temporary" "$video"
+done < <(tail -n +2 "$manifest")
 
 echo "Tranquil audio is ready in: $video_dir"

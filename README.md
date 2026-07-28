@@ -13,8 +13,8 @@ underwater, fireplace, river, desert, lake, cloud, and lavender scenes.
 ```bash
 git clone https://github.com/ZeroXSHDW/livewallpapers_mac_meditation.git
 cd livewallpapers_mac_meditation
-./scripts/download_wallpapers.sh
 brew install ffmpeg
+./scripts/download_wallpapers.sh
 ./scripts/add_tranquil_audio.sh
 ```
 
@@ -32,7 +32,7 @@ fill/crop scaling for the best fit on a widescreen Mac display.
 | File | Resolution | FPS | Source |
 | --- | --- | ---: | --- |
 | `01-serene-ocean-waves-4k.mp4` | 3840x2160 | 30 | [Pexels](https://www.pexels.com/video/aerial-view-of-serene-ocean-waves-in-4k-36070847/) |
-| `02-forest-waterfall-4k.mp4` | 2560x1440 | 30 | [Pexels](https://www.pexels.com/video/waterfalls-in-a-forest-5257861/) |
+| `02-forest-waterfall-4k.mp4` | 3840x2160 | 30 | [Pexels](https://www.pexels.com/video/waterfalls-in-a-forest-5257861/) |
 | `03-starry-night-timelapse-4k.mp4` | 3840x2160 | 25 | [Pexels](https://www.pexels.com/video/time-lapse-of-a-starry-night-sky-13384219/) |
 | `04-rainy-night-city-4k.mp4` | 3840x2160 | 24 | [Pexels](https://www.pexels.com/video/night-street-slow-motion-19924296/) |
 | `05-iceland-aurora-4k.mp4` | 3840x2160 | 25 | [Pexels](https://www.pexels.com/video/breathtaking-northern-lights-over-iceland-s-winter-landscape-35092214/) |

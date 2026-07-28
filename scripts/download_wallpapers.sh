@@ -52,30 +52,48 @@ if ! command -v curl >/dev/null 2>&1; then
   exit 1
 fi
 
+if [[ ! -f "$manifest" ]]; then
+  echo "error: manifest not found: $manifest" >&2
+  exit 1
+fi
+
 mkdir -p "$output_dir"
 
-tail -n +2 "$manifest" |
-  while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
-    target="$output_dir/$filename"
-    partial="$target.part"
+downloaded=0
+skipped=0
 
-    if [[ -f "$target" && "$force" -eq 0 ]]; then
-      echo "skip: $filename"
-      continue
-    fi
+while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
+  [[ -n "${filename:-}" ]] || continue
+  [[ "$filename" == filename ]] && continue
 
-    echo "download: $filename"
-    echo "source:   $page_url"
-    rm -f "$partial"
-    curl \
-      --location \
-      --fail \
-      --show-error \
-      --retry 3 \
-      --remote-time \
-      --output "$partial" \
-      "$asset_url"
-    mv "$partial" "$target"
-  done
+  target="$output_dir/$filename"
+  partial="$target.part"
+
+  if [[ -f "$target" && "$force" -eq 0 ]]; then
+    echo "skip: $filename"
+    skipped=$((skipped + 1))
+    continue
+  fi
+
+  if [[ -z "${asset_url:-}" ]]; then
+    echo "error: missing asset URL for $filename" >&2
+    exit 1
+  fi
+
+  echo "download: $filename"
+  echo "source:   $page_url"
+  rm -f "$partial"
+  curl \
+    --location \
+    --fail \
+    --show-error \
+    --retry 3 \
+    --remote-time \
+    --output "$partial" \
+    "$asset_url"
+  mv "$partial" "$target"
+  downloaded=$((downloaded + 1))
+done < <(tail -n +2 "$manifest")
 
 echo "Wallpapers are ready in: $output_dir"
+echo "Downloaded: $downloaded  Skipped: $skipped"
