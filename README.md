@@ -16,6 +16,7 @@ cd livewallpapers_mac_meditation
 brew install ffmpeg
 ./scripts/download_wallpapers.sh
 ./scripts/add_tranquil_audio.sh
+# or: make download && make audio
 ```
 
 The videos are downloaded to:
