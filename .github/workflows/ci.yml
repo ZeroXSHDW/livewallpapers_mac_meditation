@@ -18,25 +18,7 @@ jobs:
       - name: Shellcheck scripts
         run: shellcheck scripts/*.sh
 
-      - name: Validate wallpapers.tsv columns
+      - name: Validate wallpapers.tsv (offline)
         run: |
-          set -euo pipefail
-          file="wallpapers.tsv"
-          test -f "$file"
-          # Expect header + data rows with exactly 4 tab-separated columns
-          awk -F'\t' '
-            NF != 4 {
-              printf "error: line %d has %d columns (expected 4): %s\n", NR, NF, $0 > "/dev/stderr"
-              bad=1
-            }
-            END {
-              if (NR < 2) {
-                print "error: wallpapers.tsv needs a header and at least one data row" > "/dev/stderr"
-                exit 1
-              }
-              if (bad) exit 1
-              printf "ok: %d rows with 4 columns\n", NR
-            }
-          ' "$file"
-          # Spot-check expected header names
-          head -n1 "$file" | grep -qx $'filename\tpage_url\tasset_url\taudio_profile'
+          chmod +x scripts/validate_manifest.sh
+          ./scripts/validate_manifest.sh

@@ -50,6 +50,14 @@ fill/crop scaling for the best fit on a widescreen Mac display.
 The complete machine-readable list is in
 [`wallpapers.tsv`](wallpapers.tsv).
 
+Validate the manifest offline (columns, unique names, https URLs):
+
+```bash
+make validate
+# optional network HEAD checks (not used in CI):
+make validate-check
+```
+
 ## Tranquil audio
 
 The audio generator creates subtle stereo ambience matched to each scene:
