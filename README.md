@@ -138,3 +138,24 @@ Keep attribution, licensing boundaries, and downloader safety intact. Run the do
 ## Security
 
 Report vulnerabilities privately using [SECURITY.md](SECURITY.md). Never commit private downloads, credentials, or local media paths.
+
+## Purpose
+
+This repository packages a safe, inspectable macOS wallpaper and meditation
+media workflow. It does not redistribute the downloaded media itself.
+
+## Features
+
+- Validated wallpaper catalog and attribution records.
+- Shell-based downloader and local media organization guidance.
+
+## Architecture
+
+Metadata and scripts remain in Git; downloaded media stays local and outside
+the repository. CI validates catalog structure and shell safety without
+fetching or storing the media collection.
+
+## Prerequisites
+
+Use macOS with Bash 3.2-compatible tooling. Review the downloader options,
+network permissions, storage requirements, and Pexels terms before use.
