@@ -61,7 +61,7 @@ if [[ ! -d "$video_dir" ]]; then
   exit 1
 fi
 
-while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
+while IFS=$'\t' read -r filename _ _ audio_profile; do
   [[ -n "${filename:-}" ]] || continue
 
   video="$video_dir/$filename"

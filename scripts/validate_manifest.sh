@@ -153,7 +153,7 @@ if [[ "$do_check" -eq 1 ]]; then
 
   echo "Running optional HEAD checks (network)..."
   check_errors=0
-  while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
+  while IFS=$'\t' read -r filename page_url asset_url _; do
     [[ -n "${filename:-}" ]] || continue
     [[ "$filename" == "filename" ]] && continue
 
