@@ -130,3 +130,11 @@ possible.
 The scripts and project documentation are released under the
 [MIT License](LICENSE). The downloaded videos are not covered by the MIT
 License; they remain subject to the Pexels license and their creators' rights.
+
+## Contributing
+
+Keep attribution, licensing boundaries, and downloader safety intact. Run the documented validation commands and see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Security
+
+Report vulnerabilities privately using [SECURITY.md](SECURITY.md). Never commit private downloads, credentials, or local media paths.
