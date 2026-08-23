@@ -61,8 +61,21 @@ if [[ ! -d "$video_dir" ]]; then
   exit 1
 fi
 
-while IFS=$'\t' read -r filename _ _ audio_profile; do
+"$script_dir/validate_manifest.sh" --manifest "$manifest"
+
+temporary=""
+cleanup_temporary() {
+  if [[ -n "$temporary" ]]; then
+    rm -f "$temporary"
+  fi
+}
+
+trap cleanup_temporary EXIT
+trap 'exit 130' INT TERM HUP
+
+while IFS=$'\t' read -r filename _ _ audio_profile || [[ -n "${filename:-}" ]]; do
   [[ -n "${filename:-}" ]] || continue
+  [[ "$filename" == filename ]] && continue
 
   video="$video_dir/$filename"
 
@@ -71,14 +84,21 @@ while IFS=$'\t' read -r filename _ _ audio_profile; do
     continue
   fi
 
-  existing_audio="$(
-    ffprobe -v error -select_streams a -show_entries stream=codec_name \
-      -of default=nw=1:nk=1 "$video"
-  )"
+  if ! existing_audio="$(
+      ffprobe -v error -select_streams a -show_entries stream=codec_name \
+        -of default=nw=1:nk=1 "$video"
+    )"; then
+    echo "error: ffprobe could not inspect $filename" >&2
+    exit 1
+  fi
 
-  if [[ "$audio_profile" == "preserve" && -n "$existing_audio" ]]; then
-    echo "preserve: $filename"
-    continue
+  if [[ "$audio_profile" == "preserve" ]]; then
+    if [[ -n "$existing_audio" ]]; then
+      echo "preserve: $filename"
+      continue
+    fi
+    echo "error: $filename declares preserve but has no audio stream" >&2
+    exit 1
   fi
 
   if [[ -n "$existing_audio" && "$force" -eq 0 ]]; then
@@ -86,10 +106,17 @@ while IFS=$'\t' read -r filename _ _ audio_profile; do
     continue
   fi
 
-  duration="$(
-    ffprobe -v error -show_entries format=duration \
-      -of default=nw=1:nk=1 "$video"
-  )"
+  if ! duration="$(
+      ffprobe -v error -show_entries format=duration \
+        -of default=nw=1:nk=1 "$video"
+    )"; then
+    echo "error: ffprobe could not read duration for $filename" >&2
+    exit 1
+  fi
+  if [[ ! "$duration" =~ ^[0-9]+([.][0-9]+)?$ ]] || ! awk -v duration="$duration" 'BEGIN { exit !(duration > 0) }'; then
+    echo "error: invalid video duration for $filename: $duration" >&2
+    exit 1
+  fi
   fade_start="$(awk -v duration="$duration" \
     'BEGIN { start = duration - 0.75; if (start < 0) start = 0; printf "%.3f", start }')"
 
@@ -118,19 +145,18 @@ while IFS=$'\t' read -r filename _ _ audio_profile; do
       source_filter="sine=frequency=110:sample_rate=48000"
       sound_filter="lowpass=f=500,tremolo=f=0.10:d=0.35,volume=0.035"
       ;;
-    preserve)
-      source_filter="anoisesrc=color=pink:amplitude=0.12:sample_rate=48000"
-      sound_filter="highpass=f=80,lowpass=f=1800,volume=0.10"
-      ;;
     *)
       echo "error: unknown audio profile '$audio_profile' for $filename" >&2
       exit 1
       ;;
   esac
 
-  temporary="$video.audio.mp4"
+  if ! temporary="$(mktemp "$video_dir/.${filename}.audio.XXXXXX")"; then
+    echo "error: could not create a temporary output for $filename" >&2
+    exit 1
+  fi
   echo "add $audio_profile audio: $filename"
-  ffmpeg \
+  if ! ffmpeg \
     -hide_banner \
     -loglevel error \
     -nostdin \
@@ -147,8 +173,16 @@ while IFS=$'\t' read -r filename _ _ audio_profile; do
     -b:a 160k \
     -t "$duration" \
     -movflags +faststart \
-    "$temporary"
-  mv "$temporary" "$video"
-done < <(tail -n +2 "$manifest")
+    "$temporary"; then
+    echo "error: ffmpeg failed for $filename" >&2
+    exit 1
+  fi
+  if [[ ! -s "$temporary" ]]; then
+    echo "error: ffmpeg produced an empty file for $filename" >&2
+    exit 1
+  fi
+  mv -f "$temporary" "$video"
+  temporary=""
+done < "$manifest"
 
 echo "Tranquil audio is ready in: $video_dir"

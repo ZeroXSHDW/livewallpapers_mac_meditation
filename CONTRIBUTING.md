@@ -8,6 +8,8 @@ Read the repository README and inspect the current branch before editing. Keep c
 
 Run the strongest documented local gate before requesting review:
 
+- run `make quality` (offline manifest validation, ShellCheck, regression
+  contracts, and whitespace checks);
 - run the repository's documented test, lint, type-check, build, audit, or shell-validation commands;
 - run `git diff --check`;
 - add or update a regression test for every repaired contract or failure path;

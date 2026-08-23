@@ -27,9 +27,14 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Shellcheck scripts
-        run: shellcheck scripts/*.sh
+        run: shellcheck scripts/*.sh tests/*.sh
 
       - name: Validate wallpapers.tsv (offline)
         run: |
-          chmod +x scripts/validate_manifest.sh
-          ./scripts/validate_manifest.sh
+          make validate
+
+      - name: Run offline script contracts
+        run: make test
+
+      - name: Check diff formatting
+        run: git diff --check

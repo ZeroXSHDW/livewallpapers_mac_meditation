@@ -54,9 +54,16 @@ Validate the manifest offline (columns, unique names, https URLs):
 
 ```bash
 make validate
-# optional network HEAD checks (not used in CI):
+# optional network HEAD checks (not used in CI; protected Pexels pages warn):
 make validate-check
+# full offline repository gate (validation, shellcheck, regression contracts):
+make quality
 ```
+
+The offline gate does not download media or require FFmpeg. It rejects unsafe
+filenames, credential-bearing, non-HTTPS, or non-Pexels URLs, duplicate
+entries, malformed rows, and unknown audio profiles before either media script
+performs file I/O.
 
 ## Tranquil audio
 
@@ -70,8 +77,10 @@ brew install ffmpeg
 ```
 
 FFmpeg copies the original video stream without re-encoding it, so the native
-picture quality is preserved. Use `--force` to replace an existing
-generated track.
+picture quality is preserved. Use `--force` to replace an existing generated
+track. The `preserve` profile requires an existing audio stream and fails
+closed if the source file does not contain one; it never invents replacement
+audio for a source that is supposed to be retained.
 
 ## Downloader options
 
@@ -92,6 +101,11 @@ Download to a different directory:
 ```bash
 ./scripts/download_wallpapers.sh --output /path/to/videos
 ```
+
+Downloads are written to a temporary file and atomically renamed only after a
+non-empty HTTPS response completes. Manifest URLs and final redirects are
+restricted to the expected Pexels hosts, retries have bounded connection and
+total durations, and interrupted partial files are removed automatically.
 
 ## Why the MP4 files are not committed
 
