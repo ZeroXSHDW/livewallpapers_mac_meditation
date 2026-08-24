@@ -112,6 +112,30 @@ non-empty HTTPS response completes. Manifest URLs and final redirects are
 restricted to the expected Pexels hosts, retries have bounded connection and
 total durations, and interrupted partial files are removed automatically.
 
+
+## Troubleshooting
+
+- If `make validate` fails, fix the first reported manifest row in
+  `wallpapers.tsv`; keep filenames as safe basenames, URLs HTTPS-only, hosts
+  approved, and audio profiles from the documented set. Do not bypass the
+  validator to force a download.
+- If a download is rejected for a redirect, host, empty-file, or timeout
+  check, inspect the source URL and final Pexels host. The downloader is
+  intentionally fail-closed; do not replace its HTTPS, host, retry, or atomic
+  write guards with a generic URL.
+- If audio generation fails, confirm that FFmpeg is installed and rerun
+  `make audio` for the selected local media directory. The `preserve`
+  profile requires an existing source audio stream; it does not synthesize one.
+- If LiveWallpaperMacOS does not show a video, confirm the MP4 exists under
+  `wallpapers-live/videos/`, import that directory again, and use fill/crop
+  scaling. The repository does not commit or redistribute the media binaries.
+- If `make quality` fails, run `make patch-hygiene`, `make validate`, and
+  `make test` separately before ShellCheck. The standard gate is offline and
+  does not require FFmpeg, media downloads, or network access.
+- Use `make validate-check` only when you intentionally want optional network
+  HEAD checks; a protected or rate-limited Pexels page is not an offline
+  catalog failure.
+
 ## Why the MP4 files are not committed
 
 The videos are free to use under the
