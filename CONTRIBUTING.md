@@ -10,8 +10,9 @@ Run the strongest documented local gate before requesting review:
 
 - run `make quality` (offline manifest validation, ShellCheck, regression
   contracts, and whitespace checks);
+- run `make patch-hygiene` when you need the standalone whitespace/conflict-marker
+  check;
 - run the repository's documented test, lint, type-check, build, audit, or shell-validation commands;
-- run `git diff --check`;
 - add or update a regression test for every repaired contract or failure path;
 - confirm documentation, examples, links, and configuration match the implementation.
 

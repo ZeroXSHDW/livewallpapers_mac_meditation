@@ -56,11 +56,14 @@ Validate the manifest offline (columns, unique names, https URLs):
 make validate
 # optional network HEAD checks (not used in CI; protected Pexels pages warn):
 make validate-check
+# patch hygiene only (whitespace and unresolved conflict markers):
+make patch-hygiene
 # full offline repository gate (validation, shellcheck, regression contracts):
 make quality
 ```
 
-The offline gate does not download media or require FFmpeg. It rejects unsafe
+`make quality` starts with `make patch-hygiene`, which runs `git diff --check`
+before the remaining checks. The offline gate does not download media or require FFmpeg. It rejects unsafe
 filenames, credential-bearing, non-HTTPS, or non-Pexels URLs, duplicate
 entries, malformed rows, and unknown audio profiles before either media script
 performs file I/O.

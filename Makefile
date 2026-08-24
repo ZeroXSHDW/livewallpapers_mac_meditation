@@ -1,4 +1,4 @@
-.PHONY: download audio all help validate validate-check test quality
+.PHONY: download audio all help patch-hygiene validate validate-check test quality
 
 help:
 	@echo "Targets:"
@@ -10,6 +10,9 @@ help:
 	@echo "  make audio          - add tranquil ambient audio to videos"
 	@echo "  make all            - download then audio"
 
+patch-hygiene:
+	git diff --check
+
 validate:
 	./scripts/validate_manifest.sh
 
@@ -19,9 +22,8 @@ validate-check:
 test:
 	bash tests/test_scripts.sh
 
-quality: validate test
+quality: patch-hygiene validate test
 	shellcheck scripts/*.sh tests/*.sh
-	git diff --check
 
 download: validate
 	./scripts/download_wallpapers.sh
