@@ -63,7 +63,9 @@ make quality
 ```
 
 `make quality` starts with `make patch-hygiene`, which runs `git diff --check`
-before the remaining checks. The offline gate does not download media or require FFmpeg. It rejects unsafe
+before the remaining checks. CI uses a fixed Ubuntu 24.04 runner and repeats
+that check immediately after checkout, before installing ShellCheck. The
+offline gate does not download media or require FFmpeg. It rejects unsafe
 filenames, credential-bearing, non-HTTPS, or non-Pexels URLs, duplicate
 entries, malformed rows, and unknown audio profiles before either media script
 performs file I/O.

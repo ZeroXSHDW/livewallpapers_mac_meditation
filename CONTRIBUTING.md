@@ -16,6 +16,9 @@ Run the strongest documented local gate before requesting review:
 - add or update a regression test for every repaired contract or failure path;
 - confirm documentation, examples, links, and configuration match the implementation.
 
+The CI workflow uses Ubuntu 24.04 and runs the patch-hygiene check immediately
+after checkout, before installing ShellCheck or running repository checks.
+
 If an external service, device, GPU, cloud credential, or CI account limit prevents a check, record the exact blocker in the pull request and complete every safe local equivalent. Do not weaken a check, hide a warning, or add an unjustified skip to obtain a pass.
 
 ## Pull requests

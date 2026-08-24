@@ -3,6 +3,7 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
+repo_root="$(cd "$script_dir/.." && pwd)"
 validator="$script_dir/validate_manifest.sh"
 test_root="$(mktemp -d "${TMPDIR:-/tmp}/livewallpapers-tests.XXXXXX")"
 
@@ -54,6 +55,17 @@ if ! grep -Fq -- "https://videos.pexels.com/*" "$script_dir/download_wallpapers.
 fi
 if ! grep -Fq -- "--proto-redir '=https'" "$script_dir/download_wallpapers.sh"; then
   echo "FAIL: downloader must keep redirects on HTTPS" >&2
+  exit 1
+fi
+
+workflow="$repo_root/.github/workflows/ci.yml"
+if grep -Fq -- 'runs-on: ubuntu-latest' "$workflow" ||
+   ! grep -Fq -- 'runs-on: ubuntu-24.04' "$workflow"; then
+  echo "FAIL: CI must use the fixed Ubuntu 24.04 runner" >&2
+  exit 1
+fi
+if ! awk '/persist-credentials: false/ { checkout = NR } /run: git diff --check/ { patch = NR } END { exit !(checkout > 0 && patch > checkout) }' "$workflow"; then
+  echo "FAIL: CI must run patch hygiene immediately after checkout" >&2
   exit 1
 fi
 
