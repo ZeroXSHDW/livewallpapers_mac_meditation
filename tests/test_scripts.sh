@@ -58,6 +58,15 @@ if ! grep -Fq -- "--proto-redir '=https'" "$script_dir/download_wallpapers.sh"; 
   exit 1
 fi
 
+if ! grep -Fq -- "## Troubleshooting" "$repo_root/README.md"; then
+  echo "FAIL: README must document wallpaper recovery paths" >&2
+  exit 1
+fi
+if ! grep -Fq -- "make validate-check" "$repo_root/README.md"; then
+  echo "FAIL: README must distinguish optional network validation" >&2
+  exit 1
+fi
+
 workflow="$repo_root/.github/workflows/ci.yml"
 if grep -Fq -- 'runs-on: ubuntu-latest' "$workflow" ||
    ! grep -Fq -- 'runs-on: ubuntu-24.04' "$workflow"; then
