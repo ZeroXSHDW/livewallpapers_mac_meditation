@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Validate wallpapers.tsv without requiring network access by default.
-# Optional: --check performs HTTP HEAD on asset_url / page_url (not for CI).
+# Optional: --check performs HTTPS HEAD on asset_url / page_url (not for CI).
 
 set -euo pipefail
 
@@ -72,6 +72,45 @@ errors=0
 row_count=0
 seen_names=""
 
+valid_audio_profile() {
+  case "$1" in
+    ocean|water|rain|wind|underwater|celestial|preserve)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+valid_https_url() {
+  local url="$1"
+  local expected_host="$2"
+  local authority
+
+  case "$url" in
+    https://*)
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+
+  # Keep the manifest free of credentials, whitespace, and empty authorities.
+  if [[ "$url" == *[[:space:]]* || "$url" == *$'\r'* ]]; then
+    return 1
+  fi
+  authority="${url#https://}"
+  authority="${authority%%/*}"
+  [[ "$authority" == "$expected_host" ]]
+}
+
+valid_filename() {
+  # A manifest name is used as a path component by both media scripts.  Keep
+  # it portable and prevent traversal or option-like names before any I/O.
+  [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*\.mp4$ ]]
+}
+
 while IFS=$'\t' read -r filename page_url asset_url audio_profile || [[ -n "${filename:-}" ]]; do
   [[ -n "${filename:-}" ]] || continue
   [[ "$filename" == "filename" ]] && continue
@@ -97,6 +136,11 @@ while IFS=$'\t' read -r filename page_url asset_url audio_profile || [[ -n "${fi
     errors=$((errors + 1))
   fi
 
+  if ! valid_filename "$filename"; then
+    echo "error: line $line_no filename must be a safe .mp4 basename: $filename" >&2
+    errors=$((errors + 1))
+  fi
+
   case $'\n'"$seen_names"$'\n' in
     *$'\n'"$filename"$'\n'*)
       echo "error: duplicate filename: $filename" >&2
@@ -107,12 +151,17 @@ while IFS=$'\t' read -r filename page_url asset_url audio_profile || [[ -n "${fi
       ;;
   esac
 
-  if [[ "$page_url" != https://* ]]; then
-    echo "error: line $line_no page_url must start with https://: $page_url" >&2
+  if ! valid_https_url "$page_url" "www.pexels.com"; then
+    echo "error: line $line_no page_url must be an https URL on www.pexels.com: $page_url" >&2
     errors=$((errors + 1))
   fi
-  if [[ "$asset_url" != https://* ]]; then
-    echo "error: line $line_no asset_url must start with https://: $asset_url" >&2
+  if ! valid_https_url "$asset_url" "videos.pexels.com"; then
+    echo "error: line $line_no asset_url must be an https URL on videos.pexels.com: $asset_url" >&2
+    errors=$((errors + 1))
+  fi
+
+  if ! valid_audio_profile "$audio_profile"; then
+    echo "error: line $line_no has an unsupported audio_profile: $audio_profile" >&2
     errors=$((errors + 1))
   fi
 done < "$manifest"
@@ -153,7 +202,7 @@ if [[ "$do_check" -eq 1 ]]; then
 
   echo "Running optional HEAD checks (network)..."
   check_errors=0
-  while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
+  while IFS=$'\t' read -r filename page_url asset_url _; do
     [[ -n "${filename:-}" ]] || continue
     [[ "$filename" == "filename" ]] && continue
 
@@ -163,10 +212,21 @@ if [[ "$do_check" -eq 1 ]]; then
       else
         url="$asset_url"
       fi
-      code="$(curl -sS -o /dev/null -w '%{http_code}' -I -L --max-time "$timeout_secs" "$url" || echo "000")"
+      code="$(curl -sS -o /dev/null -w '%{http_code}' -I -L \
+        --proto '=https' --proto-redir '=https' --max-time "$timeout_secs" "$url" || echo "000")"
       case "$code" in
         2*|3*)
           echo "ok HEAD $code $kind $filename"
+          ;;
+        403)
+          if [[ "$kind" == "page" ]]; then
+            # Pexels commonly protects HTML pages from automated HEAD
+            # requests while leaving the direct video CDN URL available.
+            echo "warn HEAD 403 protected page $filename -> $url" >&2
+          else
+            echo "warn HEAD 403 asset $filename -> $url" >&2
+            check_errors=$((check_errors + 1))
+          fi
           ;;
         *)
           echo "warn HEAD $code $kind $filename -> $url" >&2
@@ -177,7 +237,7 @@ if [[ "$do_check" -eq 1 ]]; then
   done < "$manifest"
 
   if [[ "$check_errors" -gt 0 ]]; then
-    echo "error: $check_errors URL(s) failed HEAD checks" >&2
+    echo "error: $check_errors URL(s) failed HTTPS HEAD checks" >&2
     exit 1
   fi
   echo "ok: all HEAD checks passed"

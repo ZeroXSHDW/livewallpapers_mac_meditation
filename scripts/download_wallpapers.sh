@@ -57,12 +57,27 @@ if [[ ! -f "$manifest" ]]; then
   exit 1
 fi
 
+# Validate before creating directories or downloading anything.  This keeps
+# manifest-controlled filenames from becoming traversal paths and ensures
+# curl can only receive HTTPS URLs.
+"$script_dir/validate_manifest.sh" --manifest "$manifest"
+
 mkdir -p "$output_dir"
 
 downloaded=0
 skipped=0
+current_partial=""
 
-while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
+cleanup_partial() {
+  if [[ -n "$current_partial" ]]; then
+    rm -f "$current_partial"
+  fi
+}
+
+trap cleanup_partial EXIT
+trap 'exit 130' INT TERM HUP
+
+while IFS=$'\t' read -r filename page_url asset_url _ || [[ -n "${filename:-}" ]]; do
   [[ -n "${filename:-}" ]] || continue
   [[ "$filename" == filename ]] && continue
 
@@ -82,18 +97,43 @@ while IFS=$'\t' read -r filename page_url asset_url audio_profile; do
 
   echo "download: $filename"
   echo "source:   $page_url"
+  current_partial="$partial"
   rm -f "$partial"
-  curl \
-    --location \
-    --fail \
-    --show-error \
-    --retry 3 \
-    --remote-time \
-    --output "$partial" \
-    "$asset_url"
-  mv "$partial" "$target"
+  if ! final_url="$(curl \
+      --proto '=https' \
+      --proto-redir '=https' \
+      --location \
+      --max-redirs 5 \
+      --fail \
+      --show-error \
+      --connect-timeout 20 \
+      --max-time 3600 \
+      --retry 3 \
+      --retry-delay 2 \
+      --retry-max-time 300 \
+      --remote-time \
+      --output "$partial" \
+      --write-out '%{url_effective}' \
+      "$asset_url")"; then
+    echo "error: curl failed for $filename" >&2
+    exit 1
+  fi
+  case "$final_url" in
+    https://videos.pexels.com/*)
+      ;;
+    *)
+      echo "error: download redirected outside videos.pexels.com: $final_url" >&2
+      exit 1
+      ;;
+  esac
+  if [[ ! -s "$partial" ]]; then
+    echo "error: downloaded file is empty: $filename" >&2
+    exit 1
+  fi
+  mv -f "$partial" "$target"
+  current_partial=""
   downloaded=$((downloaded + 1))
-done < <(tail -n +2 "$manifest")
+done < "$manifest"
 
 echo "Wallpapers are ready in: $output_dir"
 echo "Downloaded: $downloaded  Skipped: $skipped"

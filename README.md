@@ -54,9 +54,21 @@ Validate the manifest offline (columns, unique names, https URLs):
 
 ```bash
 make validate
-# optional network HEAD checks (not used in CI):
+# optional network HEAD checks (not used in CI; protected Pexels pages warn):
 make validate-check
+# patch hygiene only (whitespace and unresolved conflict markers):
+make patch-hygiene
+# full offline repository gate (validation, shellcheck, regression contracts):
+make quality
 ```
+
+`make quality` starts with `make patch-hygiene`, which runs `git diff --check`
+before the remaining checks. CI uses a fixed Ubuntu 24.04 runner and repeats
+that check immediately after checkout, before installing ShellCheck. The
+offline gate does not download media or require FFmpeg. It rejects unsafe
+filenames, credential-bearing, non-HTTPS, or non-Pexels URLs, duplicate
+entries, malformed rows, and unknown audio profiles before either media script
+performs file I/O.
 
 ## Tranquil audio
 
@@ -70,8 +82,10 @@ brew install ffmpeg
 ```
 
 FFmpeg copies the original video stream without re-encoding it, so the native
-picture quality is preserved. Use `--force` to replace an existing
-generated track.
+picture quality is preserved. Use `--force` to replace an existing generated
+track. The `preserve` profile requires an existing audio stream and fails
+closed if the source file does not contain one; it never invents replacement
+audio for a source that is supposed to be retained.
 
 ## Downloader options
 
@@ -92,6 +106,35 @@ Download to a different directory:
 ```bash
 ./scripts/download_wallpapers.sh --output /path/to/videos
 ```
+
+Downloads are written to a temporary file and atomically renamed only after a
+non-empty HTTPS response completes. Manifest URLs and final redirects are
+restricted to the expected Pexels hosts, retries have bounded connection and
+total durations, and interrupted partial files are removed automatically.
+
+
+## Troubleshooting
+
+- If `make validate` fails, fix the first reported manifest row in
+  `wallpapers.tsv`; keep filenames as safe basenames, URLs HTTPS-only, hosts
+  approved, and audio profiles from the documented set. Do not bypass the
+  validator to force a download.
+- If a download is rejected for a redirect, host, empty-file, or timeout
+  check, inspect the source URL and final Pexels host. The downloader is
+  intentionally fail-closed; do not replace its HTTPS, host, retry, or atomic
+  write guards with a generic URL.
+- If audio generation fails, confirm that FFmpeg is installed and rerun
+  `make audio` for the selected local media directory. The `preserve`
+  profile requires an existing source audio stream; it does not synthesize one.
+- If LiveWallpaperMacOS does not show a video, confirm the MP4 exists under
+  `wallpapers-live/videos/`, import that directory again, and use fill/crop
+  scaling. The repository does not commit or redistribute the media binaries.
+- If `make quality` fails, run `make patch-hygiene`, `make validate`, and
+  `make test` separately before ShellCheck. The standard gate is offline and
+  does not require FFmpeg, media downloads, or network access.
+- Use `make validate-check` only when you intentionally want optional network
+  HEAD checks; a protected or rate-limited Pexels page is not an offline
+  catalog failure.
 
 ## Why the MP4 files are not committed
 
@@ -130,3 +173,32 @@ possible.
 The scripts and project documentation are released under the
 [MIT License](LICENSE). The downloaded videos are not covered by the MIT
 License; they remain subject to the Pexels license and their creators' rights.
+
+## Contributing
+
+Keep attribution, licensing boundaries, and downloader safety intact. Run the documented validation commands and see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Security
+
+Report vulnerabilities privately using [SECURITY.md](SECURITY.md). Never commit private downloads, credentials, or local media paths.
+
+## Purpose
+
+This repository packages a safe, inspectable macOS wallpaper and meditation
+media workflow. It does not redistribute the downloaded media itself.
+
+## Features
+
+- Validated wallpaper catalog and attribution records.
+- Shell-based downloader and local media organization guidance.
+
+## Architecture
+
+Metadata and scripts remain in Git; downloaded media stays local and outside
+the repository. CI validates catalog structure and shell safety without
+fetching or storing the media collection.
+
+## Prerequisites
+
+Use macOS with Bash 3.2-compatible tooling. Review the downloader options,
+network permissions, storage requirements, and Pexels terms before use.
