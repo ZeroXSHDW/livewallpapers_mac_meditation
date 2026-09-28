@@ -1,5 +1,7 @@
 # Live Wallpapers for macOS Meditation
 
+**Private repository.** Owner: [ZeroXSHDW](https://github.com/ZeroXSHDW).
+
 A curated collection of calm, cinematic 4K MP4 wallpapers for macOS.
 
 This project is designed for use with
@@ -130,3 +132,7 @@ possible.
 The scripts and project documentation are released under the
 [MIT License](LICENSE). The downloaded videos are not covered by the MIT
 License; they remain subject to the Pexels license and their creators' rights.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
