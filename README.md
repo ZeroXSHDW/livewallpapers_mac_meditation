@@ -11,8 +11,6 @@
 
 # Live Wallpapers Mac Meditation
 
-> **Private repository.** Owner: [ZeroXSHDW](https://github.com/ZeroXSHDW).
-
 **[Live Wallpapers Mac Meditation](https://ZeroDevLLC.com)** by [ZeroDev LLC](https://ZeroDevLLC.com) · GitHub: [ZeroXSHDW/livewallpapers_mac_meditation](https://github.com/ZeroXSHDW/livewallpapers_mac_meditation)
 
 > Brand: **[https://ZeroDevLLC.com](https://ZeroDevLLC.com)** · Store: **[https://zerodevllc.store](https://zerodevllc.store)**  
