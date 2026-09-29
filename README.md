@@ -5,16 +5,20 @@
   / /|  __/ | | (_) | |_| |  __/\ V / | |___| |__| |___
  /____\___|_|  \___/|____/ \___| \_/  |_____|_____\____|
                     ZeroDev LLC
-             https://ZeroDevLLC.com
+                Live Wallpapers Mac Meditation
+    https://ZeroDevLLC.com  ·  https://zerodevllc.store
 ```
 
 # Live Wallpapers Mac Meditation
 
+> **Private repository.** Owner: [ZeroXSHDW](https://github.com/ZeroXSHDW).
+
 **[Live Wallpapers Mac Meditation](https://ZeroDevLLC.com)** by [ZeroDev LLC](https://ZeroDevLLC.com) · GitHub: [ZeroXSHDW/livewallpapers_mac_meditation](https://github.com/ZeroXSHDW/livewallpapers_mac_meditation)
 
-> Store / brand: **[https://ZeroDevLLC.com](https://ZeroDevLLC.com)**  
-> Production releases are published on the public-bound repo `livewallpapers_mac_meditation`.  
-> Active development uses the private twin [`livewallpapers_mac_meditation-dev`](https://github.com/ZeroXSHDW/livewallpapers_mac_meditation-dev).
+> Brand: **[https://ZeroDevLLC.com](https://ZeroDevLLC.com)** · Store: **[https://zerodevllc.store](https://zerodevllc.store)**  
+> Production releases → public-bound `livewallpapers_mac_meditation`.  
+> Active development → private twin [`livewallpapers_mac_meditation-dev`](https://github.com/ZeroXSHDW/livewallpapers_mac_meditation-dev).
+
 
 ## Screenshots
 
