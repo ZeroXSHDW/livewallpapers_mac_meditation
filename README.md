@@ -22,7 +22,22 @@
 
 ## Screenshots
 
-_No product screenshots are checked in yet. Add images under `docs/branding/` (see placeholder note in this PR) and embed them here._
+Still frames extracted from the curated 4K wallpapers listed in [`wallpapers.tsv`](wallpapers.tsv) (Pexels source assets used by `./scripts/download_wallpapers.sh`):
+
+![Serene ocean waves wallpaper preview](docs/branding/hero-ocean.jpg)
+
+<p align="center">
+  <img src="docs/branding/preview-aurora.jpg" alt="Iceland aurora wallpaper preview" width="48%" />
+  <img src="docs/branding/preview-waterfall.jpg" alt="Forest waterfall wallpaper preview" width="48%" />
+</p>
+
+| Image | Wallpaper |
+| --- | --- |
+| `docs/branding/hero-ocean.jpg` | `01-serene-ocean-waves-4k.mp4` |
+| `docs/branding/preview-aurora.jpg` | `05-iceland-aurora-4k.mp4` |
+| `docs/branding/preview-waterfall.jpg` | `02-forest-waterfall-4k.mp4` |
+
+See [`docs/branding/SCREENSHOTS.md`](docs/branding/SCREENSHOTS.md) for provenance notes.
 
 ---
 A curated collection of calm, cinematic 4K MP4 wallpapers for macOS.
