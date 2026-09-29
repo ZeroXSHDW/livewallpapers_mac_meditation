@@ -1,7 +1,30 @@
-# Live Wallpapers for macOS Meditation
+```
+  ______             ____              _     _     ____
+ |__  /___ _ __ ___ |  _ \  _____   __| |   | |   / ___|
+   / // _ \ '__/ _ \| | | |/ _ \ \ / /| |   | |  | |
+  / /|  __/ | | (_) | |_| |  __/\ V / | |___| |__| |___
+ /____\___|_|  \___/|____/ \___| \_/  |_____|_____\____|
+                    ZeroDev LLC
+                Live Wallpapers Mac Meditation
+    https://ZeroDevLLC.com  ·  https://zerodevllc.store
+```
 
-**Private repository.** Owner: [ZeroXSHDW](https://github.com/ZeroXSHDW).
+# Live Wallpapers Mac Meditation
 
+> **Private repository.** Owner: [ZeroXSHDW](https://github.com/ZeroXSHDW).
+
+**[Live Wallpapers Mac Meditation](https://ZeroDevLLC.com)** by [ZeroDev LLC](https://ZeroDevLLC.com) · GitHub: [ZeroXSHDW/livewallpapers_mac_meditation](https://github.com/ZeroXSHDW/livewallpapers_mac_meditation)
+
+> Brand: **[https://ZeroDevLLC.com](https://ZeroDevLLC.com)** · Store: **[https://zerodevllc.store](https://zerodevllc.store)**  
+> Production releases → public-bound `livewallpapers_mac_meditation`.  
+> Active development → private twin [`livewallpapers_mac_meditation-dev`](https://github.com/ZeroXSHDW/livewallpapers_mac_meditation-dev).
+
+
+## Screenshots
+
+_No product screenshots are checked in yet. Add images under `docs/branding/` (see placeholder note in this PR) and embed them here._
+
+---
 A curated collection of calm, cinematic 4K MP4 wallpapers for macOS.
 
 This project is designed for use with
